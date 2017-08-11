@@ -1,0 +1,12 @@
+[Unit]
+Description=PiFrameBot
+After=syslog.target network.target
+
+[Service]
+Restart=always
+RestartSec=300
+ExecStart=/home/pi/piframebot.pl
+User=pi
+
+[Install]
+WantedBy=multi-user.target
