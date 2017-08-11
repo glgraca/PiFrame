@@ -31,3 +31,15 @@ The frame has three areas:
 1. One large image (with a 50% chance of showing an image from either directory)
 2. One small image (only shows images from main directory
 3. One small area with time,day of the week, and date
+
+You must also add a line to /etc/fstab
+
+```sh
+tmpfs  	/home/pi/tmp  	tmpfs  	nodev,nosuid,size=1M 0 0
+```
+
+This will setup a 1MB RAM disk where the images will be resized before being displayed. This will avoid wearing down your SD card. You must also create the mount point for this RAM disk:
+
+```sh
+mkdir /home/pi/tmp
+```
