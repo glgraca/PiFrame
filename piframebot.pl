@@ -65,7 +65,7 @@ while (1) {
     #print Dumper($u);
     if(!verify_user($u)) {
       #If you are not allowed, you get your id back, so you may ask for permission
-      $api->sendMessage({chat_id=>$u->{message}{from}{id}, text=>'Hello, '.$u->{message}{from}{id}});
+      $res='Hello, '.$u->{message}{from}{id};
     } else {
       if(my $photos = $u->{message}{photo}) {
         my $photo=$photos->[0];
