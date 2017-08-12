@@ -72,13 +72,14 @@ while (1) {
         for my $p (@$photos) {
           $photo=$p if $p->{file_size}>$photo->{file_size};
         }
-        eval {
+        try {
           my $file_desc=$api->getFile({file_id=>$photo->{file_id}});
           my $file_path=$file_desc->{result}->{file_path};
           `curl -s -k -o ${path}/${update_id}.jpg https://api.telegram.org/file/bot$token/$file_path`;
           $res="Image was saved as ${path}/${update_id}.jpg";
-        };
-        $res="Error: $@" if $@;
+        } catch {
+          $res="Error: $_";
+        }
       }
       if (my $text = $u->{message}{text}) { # Text message
         next if $text !~ m!^/!; # Not a command
@@ -89,7 +90,7 @@ while (1) {
           $res=$res->($u->{message}, @params) if ref $res eq "CODE";
         } catch {
           $res="Failed: $_";
-        };
+        }
       }
     }
     next unless $res;
