@@ -18,7 +18,7 @@ use open ':std', ':encoding(utf8)';
 my @file_list;
 my $tmp='/home/pi/tmp/tmp.jpg';
 my $root=$ARGV[0].'/';
-my $telegram_root='/data01/tmp/';
+my $telegram_root=$ARGV[1].'/';
 
 my $main = MainWindow->new (
   -title => 'PiFrame',
