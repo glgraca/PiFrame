@@ -15,7 +15,7 @@ my $api=WWW::Telegram::BotAPI->new (
     token => $token
 );
 
-my %after_confirmation=();
+my @after_confirmation=();
 
 sub verify_user {
   my $u=shift;
@@ -40,14 +40,14 @@ my $commands = {
   'shutdown' => sub {
     my $u=shift;
     my $id=$u->{message}{from}{id};
-    $after_confirmation{$id}=sub {`shutdown -h now`};
-    return 'Are you sure you want to shutdown?';
+    push @after_confirmation, sub {`sudo shutdown -h now`};
+    return 'Bye, bye.'
   },
   'reboot' => sub {
     my $u=shift;
     my $id=$u->{message}{from}{id};
-    $after_confirmation{$id}=sub {`sudo reboot`};
-    return 'Are you sure you want to reboot?';
+    push @after_confirmation, sub {`sudo reboot`};
+    return 'Ok.';
   },
   'pass' => sub {
     my $u=shift;
@@ -84,6 +84,9 @@ while (1) {
   } catch {
     warn $_;
   };
+  while(my $sub=pop @after_confirmation) {
+    &$sub;
+  }
   unless ($updates and ref $updates eq "HASH" and $updates->{ok}) {
     warn "WARNING: getUpdates returned a false value - trying again...";
     next;
@@ -118,6 +121,7 @@ while (1) {
     }
     if (my $text=$u->{message}{text}) { # Text message
       my ($cmd, @params) = split / /, $text;
+      $cmd=lc($cmd);
       if(!$auth && $cmd ne 'pass') {
         $res='Send password, '.$u->{message}{from}{id};
       } else {
