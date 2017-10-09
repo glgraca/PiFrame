@@ -34,15 +34,6 @@ my ($offset, $updates) = 0;
 # The commands that this bot supports.
 my $commands = {
   'help' => 'Use these commands: help (this message); uptime; shutdown; reboot; pass.',
-  'yes' => sub {
-    my $u=shift;
-    my $id=$u->{message}{from}{id};
-    my $cmd=$after_confirmation{$id};
-    if($cmd) {
-      asyn { sleep 10; &$cmd };
-    }
-    return 'Ok';
-  },
   'uptime' => sub {
     `uptime`;
   },
