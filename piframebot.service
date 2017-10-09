@@ -6,6 +6,7 @@ After=syslog.target network.target
 WorkingDirectory=/home/pi
 Restart=always
 RestartSec=300
+Environment=bot_image_dir=<image dir>
 Environment=bot_token=<token>
 Environment=bot_pass=<password>
 ExecStart=/home/pi/piframebot.pl
