@@ -32,6 +32,8 @@ In order to start the script automatically, you must add a line to   /home/pi/.c
 @perl /home/pi/piframe.pl <main-image-dir> <telegram-image-dir>
 ```
 
+The value of telegram-image-dir should be the same value used in the bot_image_dir environment variable set in the service file.
+
 The frame has three areas:
 1. One large image (with a 50% chance of showing an image from either directory);
 2. One small image (only shows images from main directory);
