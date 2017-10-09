@@ -2,7 +2,7 @@
 
 This is perl code for a digital picture frame based on a Raspberry Pi Zero W running Raspbian.
 
-It includes a Telegram Bot so that you can send pictures from your phone straight to the picture frame.
+It includes a Telegram Bot so that you can send pictures from your phone straight to the picture frame. If you include a caption, it will be shown along with the image.
 
 You need to install a few packages:
 
@@ -14,6 +14,11 @@ sudo cpanm Imager::File::JPEG
 sudo apt-get install libnet-ssleay-perl libio-socket-ssl-perl --fix-missing
 sudo cpanm WWW::Telegram::BotAPI
 ```
+
+The services file has a few variables that you must edit:
+1. bot_image_dir (where to store the images sent through Telegram);
+2. bot_token (the Telegram authentication token);
+3. bot_pass (the password users must use to gain access).
 
 Then, you have to copy the service file to /etc/systemd/system and issue a couple of commands:
 
@@ -43,3 +48,12 @@ This will setup a 1MB RAM disk where the images will be resized before being dis
 ```sh
 mkdir /home/pi/tmp
 ```
+
+The commands serviced by the bot are:
+1. help (prints a list of commands);
+2. uptime (prints uptime for the system);
+3. reboot (reboots the system after confirmation);
+4. shutdown (shuts down the system after confirmation);
+5. pass (sends the password so that the user may gain access).
+
+The user ids for those users that have sent the correct password are stored in a text file.
