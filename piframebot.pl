@@ -83,7 +83,7 @@ my $commands = {
   }
 };
 
-printf "%s iniciando...\n", $me->{result}{username};
+printf "%s Starting...\n", $me->{result}{username};
 
 while (1) {
   try {
@@ -120,9 +120,9 @@ while (1) {
             print $caption_file $caption;
             close($caption_file);
           }
-          $res="Imagem foi gravada como ${path}/${update_id}.jpg";
+          $res="Image saved as ${path}/${update_id}.jpg";
         } catch {
-          $res="Houve um erro: $_";
+          $res="Error: $_";
         }
       }
     }
@@ -136,7 +136,7 @@ while (1) {
         try {
           $res=$res->($u, @params) if ref $res eq "CODE";
         } catch {
-          $res="Houve um erro: $_";
+          $res="Error: $_";
         }
       }
     }
