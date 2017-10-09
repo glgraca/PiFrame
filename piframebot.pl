@@ -1,7 +1,6 @@
 #!/usr/bin/env perl
 use strict;
 use warnings;
-use threads;
 use WWW::Telegram::BotAPI;
 use LWP::UserAgent;
 use URI::Escape;
