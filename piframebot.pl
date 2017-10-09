@@ -2,37 +2,28 @@
 use strict;
 use warnings;
 use threads;
-use threads::shared;
-use HTTP::Daemon;
-use HTTP::Request;
-use HTTP::Status;
 use WWW::Telegram::BotAPI;
 use LWP::UserAgent;
-use Data::Dumper;
 use URI::Escape;
 use Try::Tiny;
+use open ':std', ':encoding(utf8)';
 
-#This is where images will be stored
-my $path=$ARGV[0];
-
-#Users who may use this bot
-my $user_id={'Derpina'=>123,'Me'=>321};
-
-my $token='<insert token here>';
+my $path=$ENV{bot_image_dir};
+my $token=$ENV{bot_token};
+my $pass=$ENV{bot_pass};
 
 my $api=WWW::Telegram::BotAPI->new (
     token => $token
 );
 
-#Verify that user has permission to use this bot
+my %after_confirmation=();
+
 sub verify_user {
   my $u=shift;
   my $id=$u->{message}{from}{id};
 
-  for my $user (keys %$user_id) {
-    return 1 if $id==$user_id->{$user};
-  }
-  return 0;
+  my $r=`grep -c $id pizframebot.txt`;
+  return $r;
 }
 
 # Bump up the timeout when Mojo::UserAgent is used (LWP::UserAgent uses 180s by default)
@@ -42,18 +33,67 @@ my $me = $api->getMe or die;
 my ($offset, $updates) = 0;
 
 # The commands that this bot supports.
-my $commands = {};
+my $commands = {
+  'help' => 'Use these commands: help (this message); uptime; shutdown; reboot; pass.',
+  'yes' => sub {
+    my $u=shift;
+    my $id=$u->{message}{from}{id};
+    my $cmd=$after_confirmation{$id};
+    if($cmd) {
+      asyn { sleep 10; &$cmd };
+    }
+    return 'Ok';
+  },
+  'uptime' => sub {
+    `uptime`;
+  },
+  'shutdown' => sub {
+    my $u=shift;
+    my $id=$u->{message}{from}{id};
+    $after_confirmation{$id}=sub {`shutdown -h now`};
+    return 'Are you sure you want to shutdown?';
+  },
+  'reboot' => sub {
+    my $u=shift;
+    my $id=$u->{message}{from}{id};
+    $after_confirmation{$id}=sub {`sudo reboot`};
+    return 'Are you sure you want to reboot?';
+  },
+  'pass' => sub {
+    my $u=shift;
+    my $id=$u->{message}{from}{id};
+    my $userpass=shift;
 
-printf "%s starting...\n", $me->{result}{username};
+    if($userpass ne $pass) {
+      return 'Wrong password';
+    } else {
+      if(verify_user($u)) {
+        return 'Already registered';
+      } else {
+        try {
+          open(my $passfile, '>>', 'pizframebot.txt');
+          print $passfile "$id\n";
+          close($passfile);
+          return 'Registered';
+        } catch {
+          return 'System error';
+        };
+      }
+    }
+  }
+};
+
+printf "%s iniciando...\n", $me->{result}{username};
 
 while (1) {
-  eval {
+  try {
     $updates = $api->getUpdates ({
       timeout => 30, # Use long polling
       $offset ? (offset => $offset) : ()
     });
+  } catch {
+    warn $_;
   };
-  warn $@ if $@;
   unless ($updates and ref $updates eq "HASH" and $updates->{ok}) {
     warn "WARNING: getUpdates returned a false value - trying again...";
     next;
@@ -62,11 +102,10 @@ while (1) {
     my $res=undef();
     my $update_id=$u->{update_id};
     $offset = $update_id + 1 if $update_id >= $offset;
-    #print Dumper($u);
-    if(!verify_user($u)) {
-      #If you are not allowed, you get your id back, so you may ask for permission
-      $res='Hello, '.$u->{message}{from}{id};
-    } else {
+    my $auth=verify_user($u);
+
+    if($auth) {
+      my $caption=$u->{message}{caption};
       if(my $photos = $u->{message}{photo}) {
         my $photo=$photos->[0];
         for my $p (@$photos) {
@@ -76,20 +115,28 @@ while (1) {
           my $file_desc=$api->getFile({file_id=>$photo->{file_id}});
           my $file_path=$file_desc->{result}->{file_path};
           `curl -s -k -o ${path}/${update_id}.jpg https://api.telegram.org/file/bot$token/$file_path`;
-          $res="Image was saved as ${path}/${update_id}.jpg";
+          if($caption) {
+            open(my $caption_file, '>', "${path}/${update_id}.txt");
+            print $caption_file $caption;
+            close($caption_file);
+          }
+          $res="Imagem foi gravada como ${path}/${update_id}.jpg";
         } catch {
-          $res="Error: $_";
+          $res="Houve um erro: $_";
         }
       }
-      if (my $text = $u->{message}{text}) { # Text message
-        next if $text !~ m!^/!; # Not a command
-        my ($cmd, @params) = split / /, $text;
-        $res = $commands->{substr ($cmd, 1)} || $commands->{_unknown};
+    }
+    if (my $text=$u->{message}{text}) { # Text message
+      my ($cmd, @params) = split / /, $text;
+      if(!$auth && $cmd ne 'pass') {
+        $res='Send password, '.$u->{message}{from}{id};
+      } else {
+        $res = $commands->{$cmd} || $commands->{help};
         # Pass to the subroutine the message object, and the parameters passed to the cmd.
         try {
-          $res=$res->($u->{message}, @params) if ref $res eq "CODE";
+          $res=$res->($u, @params) if ref $res eq "CODE";
         } catch {
-          $res="Failed: $_";
+          $res="Houve um erro: $_";
         }
       }
     }
