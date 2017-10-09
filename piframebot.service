@@ -3,8 +3,11 @@ Description=PiFrameBot
 After=syslog.target network.target
 
 [Service]
+WorkingDirectory=/home/pi
 Restart=always
 RestartSec=300
+Environment=bot_token=<token>
+Environment=bot_pass=<password>
 ExecStart=/home/pi/piframebot.pl
 User=pi
 
