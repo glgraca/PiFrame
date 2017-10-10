@@ -54,8 +54,8 @@ mkdir /home/pi/tmp
 The commands serviced by the bot are:
 1. help (prints a list of commands);
 2. uptime (prints uptime for the system);
-3. reboot (reboots the system after confirmation);
-4. shutdown (shuts down the system after confirmation);
+3. reboot (reboots the system);
+4. shutdown (shuts down the system);
 5. pass (sends the password so that the user may gain access).
 
 The user ids for those users that have sent the correct password are stored in a text file.
