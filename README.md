@@ -7,12 +7,17 @@ It includes a Telegram Bot so that you can send pictures from your phone straigh
 You need to install a few packages:
 
 ```sh
+sudo apt-get install curl
+sudo curl -L http://cpanmin.us | perl - --sudo App::cpanminus
+sudo apt-get install libwww-perl
 sudo apt-get install perl-tk
 sudo apt-get install libjpeg-devel
 sudo cpanm Imager
 sudo cpanm Imager::File::JPEG
+sudo cpanm Imager::ExifOrientation
 sudo apt-get install libnet-ssleay-perl libio-socket-ssl-perl --fix-missing
 sudo cpanm WWW::Telegram::BotAPI
+sudo cpanm File::Random
 ```
 
 The services file has a few variables that you must edit:
@@ -49,6 +54,19 @@ This will setup a 1MB RAM disk where the images will be resized before being dis
 
 ```sh
 mkdir /home/pi/tmp
+```
+
+You should also disable the screen saver:
+
+```sh
+Change two settings in /etc/kbd/config 
+BLANK_TIME=0
+POWERDOWN_TIME=0
+
+Add these lines to /etc/xdg/lxsession/LXDE-pi/autostart
+@xset s noblank 
+@xset s off 
+@xset -dpms
 ```
 
 The commands serviced by the bot are:
