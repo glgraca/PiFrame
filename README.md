@@ -39,10 +39,9 @@ In order to start the script automatically, you must add a line to   /home/pi/.c
 
 The value of telegram-image-dir should be the same value used in the bot_image_dir environment variable set in the service file.
 
-The frame has three areas:
-1. One large image (with a 50% chance of showing an image from either directory);
-2. One small image (only shows images from main directory);
-3. One small area with time, day of the week, and date.
+The frame has two areas:
+1. A calendar occupies the top 20% of the screen;
+2. The bottom 80% shows one image if the screen ratio is less than 1.5 and two otherwise.
 
 You must also add a line to /etc/fstab
 
