@@ -15,10 +15,9 @@ use strict;
 use utf8;
 use open ':std', ':encoding(utf8)';
 
-my @file_list;
 my $tmp='/home/pi/tmp/tmp.jpg';
 my $root=$ARGV[0].'/';
-my $telegram_root=$ARGV[1].'/';
+my $telegram_root='/data01/tmp/';
 
 my $main = MainWindow->new (
   -title => 'PiFrame',
@@ -27,48 +26,56 @@ my $main = MainWindow->new (
 
 my $w=$main->screenwidth();
 my $h=$main->screenheight();
+my $ratio=$w/$h;
+my $photos=1;
+
+if($ratio>1.5) {
+  $photos=2;
+}
+
 $main->overrideredirect(1);
 $main->MoveToplevelWindow(0,0);
 $main->geometry(join('x',$w,$h));
 $main->hideCursor();
 
-my $photo_width=int($w*3/4);
-my $photo_height=$h;
-my $thumb_width=$w-$photo_width;
-my $thumb_height=int($h/3);
+my $photo_width=int($w/2);
+my $photo_height=int($h*0.8);
 
-my $canvas=$main->Canvas(
-  -width=>$photo_width,
-  -height=>$h,
-  -background=>'black',
-  -highlightthickness => 0);
-$canvas->pack(-side=>'left');
+my @photo=();
+my @canvas=();
 
-my $small_canvas=$main->Canvas(
-  -width=>$thumb_width,
-  -height=>$thumb_height,
-  -background=>'black',
-  -highlightthickness => 0);
-$small_canvas->pack(-side=>'bottom');
+for (1..$photos) {
+  my $canvas=$main->Canvas(
+    -width=>$photo_width,
+    -height=>$photo_height,
+    -background=>'black',
+    -bd=>2,
+    -highlightthickness => 0);
+
+  my $photo=$canvas->Photo();
+  $canvas->createImage(0,0,-image=>$photo,-anchor=>'nw');
+
+  push(@canvas, $canvas);
+  push(@photo, $photo);
+}
 
 my $time;
 my $caption;
 
 my $clock=$main->Label(
   -textvariable=>\$time,
-  -wraplength=>$thumb_width,
-  -width=>100,
-  -height=>100,
+  -wraplength=>$w,
+  -width=>80,
+  -height=>2,
   -background=>'black',
   -foreground=>'white',
   -highlightthickness => 0,
-  -font=>'courier 40 bold');
-$clock->pack(-side=>'top');
+  -font=>'courier 24 bold');
+$clock->pack();
 
-my $photo=$canvas->Photo();
-$canvas->createImage(0,0,-image=>$photo,-anchor=>'nw');
-my $thumb=$small_canvas->Photo();
-$small_canvas->createImage(0,0,-image=>$thumb,-anchor=>'nw');
+for my $canvas (@canvas) {
+  $canvas->pack(-side=>'left');
+}
 
 sub scale {
   my ($width, $height, $image)=@_;
@@ -77,34 +84,32 @@ sub scale {
 }
 
 sub next_photo {
+  my $photo=shift;
   $caption='';
   my $filename;
   if(int(rand(2))==1) {
-    $filename=$telegram_root.random_file(-dir=>$telegram_root, -check=>qr/\.jpg$/i, -recursive=>1);
-    my ($name, $path, $suffix) = fileparse($filename, '\.[^\.]*');
-    my $caption_file="${path}${name}.txt";
-    if(-e $caption_file) {
-      $caption=read_file($caption_file,binmode=>':utf8');
-    }
+    $filename=$telegram_root.random_file(-dir=>$telegram_root, -check=>qr/\.jpg$/i, -recursive=>1, -follow=>1);
   } else {
     $filename=$root.random_file(-dir=>$root, -check=>qr/\.jpg$/i, -recursive=>1);
   }
+  my ($name, $path, $suffix) = fileparse($filename, '\.[^\.]*');
+  my $caption_file="${path}${name}.txt";
+  if(-e $caption_file) {
+    $caption=read_file($caption_file,binmode=>':utf8');
+  }
+
   my $image = Imager::ExifOrientation->rotate(path => $filename);
   scale($photo_width, $photo_height, $image);
   $photo->configure(-file=>$tmp);
 
-  $filename=$root.random_file(-dir=>$root, -check=>qr/\.jpg$/i, -recursive=>1);
-
-  $image = Imager::ExifOrientation->rotate(path => $filename);
-  scale($thumb_width, $thumb_height, $image);
-  $thumb->configure(-file=>$tmp);
-
   $main->update();
 }
 
-$canvas->repeat(120000, sub {eval {next_photo()}});
-$canvas->repeat(3000, sub {$time=strftime("%H:%M\n%A\n%d/%m", localtime)."\n\n$caption"});
-
-next_photo();
+my @intervals=(3,5);
+for my $i (0..$#canvas) {
+  next_photo($photo[$i]);
+  $canvas[$i]->repeat($intervals[$i]*60*1000, sub {eval {next_photo($photo[$i])}});
+}
+$clock->repeat(3000, sub {$time=strftime("%H:%M %A %d/%m", localtime)."\n$caption"});
 
 MainLoop;
