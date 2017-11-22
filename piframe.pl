@@ -37,7 +37,7 @@ $main->MoveToplevelWindow(0,0);
 $main->geometry(join('x',$w,$h));
 $main->hideCursor();
 
-my $photo_width=int($w/2);
+my $photo_width=int($w/$photos);
 my $photo_height=int($h*0.8);
 
 my @photo=();
