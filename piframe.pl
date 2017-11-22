@@ -15,10 +15,9 @@ use strict;
 use utf8;
 use open ':std', ':encoding(utf8)';
 
-my $tmp='/home/pi/tmp/tmp.jpg';
+my @tmp=();
 my $root=$ARGV[0].'/';
 my $telegram_root=$ARGV[1].'/';
-
 my $main = MainWindow->new (
   -title => 'PiFrame',
   -background => 'black'
@@ -44,7 +43,7 @@ my $photo_height=int($h*0.8);
 my @photo=();
 my @canvas=();
 
-for (1..$photos) {
+for my $i (1..$photos) {
   my $canvas=$main->Canvas(
     -width=>$photo_width,
     -height=>$photo_height,
@@ -57,6 +56,7 @@ for (1..$photos) {
 
   push(@canvas, $canvas);
   push(@photo, $photo);
+  push(@tmp, sprintf('/home/pi/tmp/tmp%1d.jpg', $i));
 }
 
 my $time;
@@ -78,12 +78,13 @@ for my $canvas (@canvas) {
 }
 
 sub scale {
-  my ($width, $height, $image)=@_;
+  my ($index, $width, $height, $image)=@_;
   my $scaled=$image->scale(xpixels=>$width,ypixels=>$height,type=>'min');
-  $scaled->write(file=>$tmp, type=>'jpeg');
+  $scaled->write(file=>$tmp[$index], type=>'jpeg');
 }
 
 sub next_photo {
+  my $index=shift;
   my $photo=shift;
   $caption='';
   my $filename;
@@ -98,17 +99,17 @@ sub next_photo {
     $caption=read_file($caption_file,binmode=>':utf8');
   }
 
-  my $image = Imager::ExifOrientation->rotate(path => $filename);
-  scale($photo_width, $photo_height, $image);
-  $photo->configure(-file=>$tmp);
+  my $image=Imager::ExifOrientation->rotate(path => $filename);
+  scale($index, $photo_width, $photo_height, $image);
+  $photo->configure(-file=>$tmp[$index]);
 
   $main->update();
 }
 
 my @intervals=(3,5);
 for my $i (0..$#canvas) {
-  next_photo($photo[$i]);
-  $canvas[$i]->repeat($intervals[$i]*60*1000, sub {eval {next_photo($photo[$i])}});
+  next_photo($i, $photo[$i]);
+  $canvas[$i]->repeat($intervals[$i]*60*1000, sub {eval {next_photo($i, $photo[$i])}});
 }
 $clock->repeat(3000, sub {$time=strftime("%H:%M %A %d/%m", localtime)."\n$caption"});
 
