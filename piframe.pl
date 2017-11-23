@@ -60,7 +60,7 @@ for my $i (1..$photos) {
 }
 
 my $time;
-my $caption;
+my @caption=();
 
 my $clock=$main->Label(
   -textvariable=>\$time,
@@ -86,7 +86,7 @@ sub scale {
 sub next_photo {
   my $index=shift;
   my $photo=shift;
-  $caption='';
+  $caption[$index]='';
   my $filename;
   if(int(rand(2))==1) {
     $filename=$telegram_root.random_file(-dir=>$telegram_root, -check=>qr/\.jpg$/i, -recursive=>1, -follow=>1);
@@ -96,7 +96,7 @@ sub next_photo {
   my ($name, $path, $suffix) = fileparse($filename, '\.[^\.]*');
   my $caption_file="${path}${name}.txt";
   if(-e $caption_file) {
-    $caption=read_file($caption_file,binmode=>':utf8');
+    $caption[$index]=read_file($caption_file,binmode=>':utf8');
   }
 
   my $image=Imager::ExifOrientation->rotate(path => $filename);
@@ -111,6 +111,9 @@ for my $i (0..$#canvas) {
   next_photo($i, $photo[$i]);
   $canvas[$i]->repeat($intervals[$i]*60*1000, sub {eval {next_photo($i, $photo[$i])}});
 }
-$clock->repeat(3000, sub {$time=strftime("%H:%M %A %d/%m", localtime)."\n$caption"});
+$clock->repeat(3000, sub {
+  my $caption=join '|', grep {length>0} @caption;
+  $time=strftime("%H:%M %A %d/%m", localtime)."\n$caption"
+});
 
 MainLoop;
