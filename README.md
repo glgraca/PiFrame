@@ -67,6 +67,12 @@ Add these lines to /etc/xdg/lxsession/LXDE-pi/autostart
 @xset s off 
 @xset -dpms
 ```
+It's a good ideia to disable logging, as it will fill your SD card eventually:
+
+```sh
+sudo systemctl stop rsyslog
+sudo systemctl disable rsyslog
+```
 
 The commands serviced by the bot are:
 1. help (prints a list of commands);
