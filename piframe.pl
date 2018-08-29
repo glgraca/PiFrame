@@ -15,6 +15,9 @@ use strict;
 use utf8;
 use open ':std', ':encoding(utf8)';
 
+my $time;
+my @caption=();
+
 my @tmp=();
 my $root=$ARGV[0].'/';
 my $telegram_root=$ARGV[1].'/';
@@ -59,9 +62,6 @@ for my $i (1..$photos) {
   push(@tmp, sprintf('/home/pi/tmp/tmp%1d.jpg', $i));
 }
 
-my $time;
-my @caption=();
-
 my $clock=$main->Label(
   -textvariable=>\$time,
   -wraplength=>$w,
@@ -80,7 +80,8 @@ for my $canvas (@canvas) {
 sub scale {
   my ($index, $width, $height, $image)=@_;
   my $scaled=$image->scale(xpixels=>$width,ypixels=>$height,type=>'min');
-  $scaled->write(file=>$tmp[$index], type=>'jpeg');
+  $scaled->write(file=>$tmp[$index], type=>'jpeg');  
+  return ($scaled->getwidth(), $scaled->getheight());
 }
 
 sub next_photo {
@@ -89,7 +90,7 @@ sub next_photo {
   $caption[$index]='';
   my $filename;
   if(int(rand(2))==1) {
-    $filename=$telegram_root.random_file(-dir=>$telegram_root, -check=>qr/\.jpg$/i, -recursive=>1, -follow=>1);
+    $filename=$telegram_root.random_file(-dir=>$telegram_root, -check=>qr/\.jpg$/i, -recursive=>1, -follow=>1); 
   } else {
     $filename=$root.random_file(-dir=>$root, -check=>qr/\.jpg$/i, -recursive=>1);
   }
@@ -97,12 +98,13 @@ sub next_photo {
   my $caption_file="${path}${name}.txt";
   if(-e $caption_file) {
     $caption[$index]=read_file($caption_file,binmode=>':utf8');
-  }
-
+  } 
+  
   my $image=Imager::ExifOrientation->rotate(path => $filename);
-  scale($index, $photo_width, $photo_height, $image);
-  $photo->configure(-file=>$tmp[$index]);
-
+  my ($x, $y)=scale($index, $photo_width, $photo_height, $image);
+  #$photo->configure(-file=>$tmp[$index]);
+  $photo->blank(); 
+  $photo->read($tmp[$index],-to=>int(($photo_width-$x)/2), int(($photo_height-$y)/2));
   $main->update();
 }
 
