@@ -82,3 +82,18 @@ The commands serviced by the bot are:
 5. pass (sends the password so that the user may gain access).
 
 The user ids for those users that have sent the correct password are stored in a text file.
+
+## Bonus for extra stability
+
+Edit your /etc/crontab and add these two lines:
+
+```sh
+*/20 * * * * /home/pi/wifi.sh
+0 2 * * 1 /sbin/reboot
+```
+
+The first one will verify the Wifi connection every 20 minutes (I found that Wifi would stop working if the Pi stayed on for more than a few weeks).
+
+The second line will reboot the Pi every monday at 2am. Again, I found that leaving it on for many weeks would result in some failure (maybe a memory leak).
+
+With these two precautions, it will work without a glitch for months, maybe years.
