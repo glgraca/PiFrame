@@ -19,6 +19,7 @@ sudo cpanm Imager::ExifOrientation
 sudo apt-get install libnet-ssleay-perl libio-socket-ssl-perl --fix-missing
 sudo cpanm WWW::Telegram::BotAPI
 sudo cpanm File::Random
+sudo cpanm File::Slurp
 ```
 
 The services file has a few variables that you must edit:
