@@ -11,7 +11,8 @@ sudo apt-get install curl
 sudo curl -L http://cpanmin.us | perl - --sudo App::cpanminus
 sudo apt-get install libwww-perl
 sudo apt-get install perl-tk
-sudo apt-get install libjpeg-devel
+sudo cpanm Tk::HideCursor
+sudo apt-get install libjpeg-dev
 sudo cpanm Imager
 sudo cpanm Imager::File::JPEG
 sudo cpanm Imager::ExifOrientation
