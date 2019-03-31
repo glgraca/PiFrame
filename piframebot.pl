@@ -22,7 +22,7 @@ sub verify_user {
   my $id=$u->{message}{from}{id};
 
   my $r=`grep -c $id pizframebot.txt`;
-  return $r;
+  return int($r);
 }
 
 # Bump up the timeout when Mojo::UserAgent is used (LWP::UserAgent uses 180s by default)
