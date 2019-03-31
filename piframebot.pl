@@ -21,7 +21,7 @@ sub verify_user {
   my $u=shift;
   my $id=$u->{message}{from}{id};
 
-  my $r=`grep -c $id pizframebot.txt`;
+  my $r=`grep -Pc "^$id\$" pizframebot.txt`;
   return int($r);
 }
 
