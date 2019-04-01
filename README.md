@@ -90,8 +90,8 @@ The user ids for those users that have sent the correct password are stored in a
 Edit your /etc/crontab and add these two lines:
 
 ```sh
-*/20 * * * * /home/pi/wifi.sh
-0 2 * * 1 /sbin/reboot
+*/20 * * * * root /home/pi/wifi.sh
+0 2 * * 1 root /sbin/reboot
 ```
 
 The first one will verify the Wifi connection every 20 minutes (I found that Wifi would stop working if the Pi stayed on for more than a few weeks).
