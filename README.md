@@ -60,9 +60,12 @@ mkdir /home/pi/tmp
 You should also disable the screen saver:
 
 ```sh
-Change two settings in /etc/kbd/config or /etc/default/keyboard
+Change two settings if you have /etc/kbd/config
 BLANK_TIME=0
 POWERDOWN_TIME=0
+
+or execute this (as root) if you have /etc/default/keyboard
+TERM=linux setterm -blank 0 >> /etc/issue
 
 Add these lines to /etc/xdg/lxsession/LXDE-pi/autostart or /home/pi/.config/lxsession/LXDE-pi/autostart
 @xset s noblank 
