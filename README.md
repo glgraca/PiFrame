@@ -60,11 +60,11 @@ mkdir /home/pi/tmp
 You should also disable the screen saver:
 
 ```sh
-Change two settings in /etc/kbd/config 
+Change two settings in /etc/kbd/config or /etc/default/keyboard
 BLANK_TIME=0
 POWERDOWN_TIME=0
 
-Add these lines to /etc/xdg/lxsession/LXDE-pi/autostart
+Add these lines to /etc/xdg/lxsession/LXDE-pi/autostart or /home/pi/.config/lxsession/LXDE-pi/autostart
 @xset s noblank 
 @xset s off 
 @xset -dpms
@@ -74,6 +74,14 @@ It's a good ideia to disable logging, as it will fill your SD card eventually:
 ```sh
 sudo systemctl stop rsyslog
 sudo systemctl disable rsyslog
+```
+
+Also, disable swap:
+
+```sh
+sudo dphys-swapfile swapoff
+sudo dphys-swapfile uninstall
+sudo update-rc.d dphys-swapfile remove
 ```
 
 The commands serviced by the bot are:
